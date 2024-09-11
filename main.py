@@ -37,6 +37,7 @@ async def echo_handler(message: Message) -> None:
 
     By default, message handler will handle all message types (like a text, photo, sticker etc.)
     """
+
     try:
         # Send a copy of the received message
         await message.send_copy(chat_id=message.chat.id)
