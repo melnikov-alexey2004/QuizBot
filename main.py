@@ -1,8 +1,14 @@
 import asyncio
 import logging
+
 import sys
 from os import getenv
 from config import TOKEN
+
+from aiogram.fsm.storage.memory import MemoryStorage
+
+import config
+from handlers import router
 
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
@@ -15,8 +21,8 @@ from aiogram.types import Message
 
 # All handlers should be attached to the Router (or Dispatcher)
 
-dp = Dispatcher()
-
+dp = Dispatcher(storage=MemoryStorage())
+dp.include_router(router)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -51,8 +57,12 @@ async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
+    # удаляет все обновления, которые произошли после последнего завершения работы бота. Это нужно, чтобы бот
+    # обрабатывал только те сообщения,
+    # которые пришли ему непосредственно во время его работы, а не за всё время. следующая строка запускает бота
+    await bot.delete_webhook(drop_pending_updates=True)
     # And the run events dispatching
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
 if __name__ == "__main__":
